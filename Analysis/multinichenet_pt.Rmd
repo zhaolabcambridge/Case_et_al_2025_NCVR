@@ -1,0 +1,316 @@
+##{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width=12, fig.height=12) 
+
+
+##{r set .libPath}
+.libPaths( c( .libPaths(), "/home/agc57/apps/R_Singularity/dt") )
+.libPaths(.libPaths()[3])
+
+##{r packages}
+library(SingleCellExperiment)
+library(dplyr)
+library(ggplot2)
+library(multinichenetr)
+library(Seurat)
+
+##{r load-nichenet-network}
+options(timeout = 4000000) 
+
+organism = "human"
+
+load = FALSE
+
+if(load == TRUE){
+  lr_network = readRDS(url("https://zenodo.org/record/7074291/files/lr_network_human_21122021.rds"))
+  lr_network = lr_network %>% 
+    dplyr::rename(ligand = from, receptor = to) %>% 
+    distinct(ligand, receptor) %>% 
+    mutate(ligand = make.names(ligand), receptor = make.names(receptor))
+    
+  ligand_target_matrix = readRDS(url("https://zenodo.org/record/7074291/files/ligand_target_matrix_nsga2r_final.rds"))
+  
+  colnames(ligand_target_matrix) = colnames(ligand_target_matrix) %>% 
+  make.names()
+
+  rownames(ligand_target_matrix) = rownames(ligand_target_matrix) %>% 
+  make.names()
+}
+
+if(load == FALSE){
+  lr_network = readRDS("lr_network.rds")
+  lr_network = lr_network %>% 
+    dplyr::rename(ligand = from, receptor = to) %>% 
+    distinct(ligand, receptor) %>% 
+    mutate(ligand = make.names(ligand), receptor = make.names(receptor))
+    
+  ligand_target_matrix = readRDS("lr_network_matrix.rds")
+  
+  colnames(ligand_target_matrix) = colnames(ligand_target_matrix) %>% 
+  make.names()
+
+  rownames(ligand_target_matrix) = rownames(ligand_target_matrix) %>% 
+  make.names()
+}
+
+
+##{r read-in-data}
+adata <- readRDS("/home/agc57/Ziad_all_SCE.rds")
+
+##{r prepare-nichenet-analysis}
+adata = alias_to_symbol_SCE(adata, "human") %>% makenames_SCE()
+
+sample_id = "sampleid"
+group_id = "pt_exp_group"
+celltype_id = "fine_clustering"
+covariates = NA
+batches = NA
+
+# prep data
+
+cell_types = colData(adata)[,"fine_clustering"] %>% unique()
+cell_types
+
+
+
+saline_post = c(#ids)
+expanded = c(#ids)
+non_expanded = c(#ids)
+
+
+comparison_groups <- colData(adata) %>%
+  as.data.frame() %>%
+  mutate(pt_exp_group = case_when(sample_id %in% saline_post ~ "saline",
+                                sample_id %in% expanded ~ "expanded",
+                                sample_id %in% non_expanded ~ "nonexpanded",
+                                .default="saline"))
+colData(adata) = DataFrame(comparison_groups)
+
+## cell level expansion
+exp_tregs = read.csv("treg_exp_lists/expandedTRegs.csv") %>%
+  subset(select="X0") %>%
+  rename("index"="X0")
+
+nonexp_tregs = read.csv("treg_exp_lists/nonexpandedTRegs.csv") %>%
+  subset(select="X0") %>%
+  rename("index"="X0")
+
+comparison_groups <- colData(adata) %>%
+  as.data.frame() %>%
+  mutate(cell_id = colnames(adata)) %>%
+  mutate(fine_clustering_exp = case_when(cell_id %in% exp_tregs$index ~ "CD4_Treg_exp",
+                                         cell_id %in% nonexp_tregs$index ~ "CD4_Treg_nonexp",
+                                         .default=fine_clustering))
+colData(adata) = DataFrame(comparison_groups)
+
+SummarizedExperiment::colData(adata)$sampleid = SummarizedExperiment::colData(adata)$sampleid %>% make.names()
+
+SummarizedExperiment::colData(adata)$treatment = SummarizedExperiment::colData(adata)$treatment %>% make.names()
+
+SummarizedExperiment::colData(adata)$timepoint = SummarizedExperiment::colData(adata)$timepoint %>% make.names()
+
+SummarizedExperiment::colData(adata)$fine_clustering = SummarizedExperiment::colData(adata)$fine_clustering %>% make.names()
+
+SummarizedExperiment::colData(adata)$pt_exp_group = SummarizedExperiment::colData(adata)$pt_exp_group %>% make.names()
+
+SummarizedExperiment::colData(adata)$fine_clustering_exp = SummarizedExperiment::colData(adata)$fine_clustering_exp %>% make.names()
+
+recs = c("B_naive",
+        "cDC2",
+        "CD4_Tcm",
+        "Classical_mono",
+        "CD16pos_NK", 
+        "CD4_Tnaive",
+        "Non.classical_mono", 
+        "CD8_Temra", 
+        "CD16neg_NK", 
+        "CD8_Tem", 
+        "Intermediate_mono",                  
+        "Non.classical_mono_C1Q.",
+        "CD8_Tnaive",
+        "Vd2_gdT",
+        "Proliferating_lymphocyte",
+        "CD4_Tem",
+        "CD4_Treg",
+        "NKT",
+        "MAIT",
+        "Plasmablast",
+        "B_non.switched_memory",
+        "CD16pos_SIGLEC7_NK",
+        "B_switched_memory",
+        "Vd1_gdT",
+        "cDC1",
+        "HSC",
+        "CD4_Th2",
+        "pDC")          
+
+sends = c("CD4_Treg")
+#sends = c("CD4_Treg_exp", "CD4_Treg_nonexp")
+
+senders_oi = sends
+receivers_oi = recs
+adata = adata[, SummarizedExperiment::colData(adata)[,celltype_id] %in% c(senders_oi, receivers_oi)]
+
+##{r extract-cell-type-info}
+
+min_cells = 10
+
+abundance_expression_info = get_abundance_expression_info(sce = adata, 
+                                                          sample_id = sample_id, 
+                                                          group_id = group_id, 
+                                                          celltype_id = celltype_id, 
+                                                          min_cells = min_cells, 
+                                                          senders_oi = senders_oi, 
+                                                          receivers_oi = receivers_oi, 
+                                                          lr_network = lr_network, 
+                                                          batches = batches)
+
+##{r viz-cell-type-info}
+abundance_expression_info$abund_plot_sample
+
+##{r deg-analysis}
+
+print("hmm")
+
+contrasts_oi = c("'expanded-nonexpanded','nonexpanded-expanded'") 
+contrast_tbl = tibble(contrast = c("expanded-nonexpanded","nonexpanded-expanded"), 
+                      group = c("expanded","nonexpanded"))
+
+DE_info = get_DE_info(sce = adata, 
+                      sample_id = sample_id, 
+                      group_id = group_id, 
+                      celltype_id = celltype_id, 
+                      batches = batches, 
+                      covariates = covariates, 
+                      contrasts_oi = contrasts_oi, 
+                      min_cells = min_cells)
+
+
+##{r deg-analysis-results}
+DE_info$celltype_de$de_output_tidy %>% 
+  arrange(p_adj)
+
+celltype_de = DE_info$celltype_de$de_output_tidy
+
+
+#{r combine-deg-w-ligand-receptor}
+
+sender_receiver_de = combine_sender_receiver_de(
+  sender_de = celltype_de,
+  receiver_de = celltype_de,
+  senders_oi = senders_oi,
+  receivers_oi = receivers_oi,
+  lr_network = lr_network
+)
+
+sender_receiver_de %>% 
+  head(20)
+
+#{r parameters-1}
+logFC_threshold = 0.50
+p_val_threshold = 0.05
+fraction_cutoff = 0.05
+
+p_val_adj = FALSE
+
+top_n_target = 250
+
+cores_system = 24
+
+n.cores = min(cores_system, union(senders_oi, receivers_oi) 
+              %>% length())
+
+verbose=TRUE
+
+##{r ligand-activity-analysis}
+ligand_activities_targets_DEgenes = suppressMessages(suppressWarnings(get_ligand_activities_targets_DEgenes(
+  receiver_de = celltype_de,
+  receivers_oi = receivers_oi,
+  ligand_target_matrix = ligand_target_matrix,
+  logFC_threshold = logFC_threshold,
+  p_val_threshold = p_val_threshold,
+  p_val_adj = p_val_adj,
+  top_n_target = top_n_target,
+  verbose = verbose, 
+  n.cores = n.cores
+)))
+
+##{r parameters-2}
+prioritizing_weights_DE = c("de_ligand" = 1,
+                            "de_receptor" = 1)
+
+prioritizing_weights_activity = c("activity_scaled" = 2)
+
+prioritizing_weights_expression_specificity = c("exprs_ligand" = 2,
+                                                "exprs_receptor" = 2)
+
+prioritizing_weights_expression_sufficiency = c("frac_exprs_ligand_receptor" = 1)
+
+prioritizing_weights_relative_abundance = c( "abund_sender" = 0,
+                                             "abund_receiver" = 0)
+
+prioritizing_weights = c(prioritizing_weights_DE, 
+                         prioritizing_weights_activity, 
+                         prioritizing_weights_expression_specificity,
+                         prioritizing_weights_expression_sufficiency, 
+                         prioritizing_weights_relative_abundance)
+
+
+# grouping_df
+sender_receiver_tbl = sender_receiver_de %>% 
+  dplyr::distinct(sender, receiver)
+
+metadata_combined = SummarizedExperiment::colData(adata) %>% 
+  tibble::as_tibble()
+
+if(!is.na(batches)){
+  grouping_tbl = metadata_combined[,c(sample_id, group_id, batches)] %>% 
+    tibble::as_tibble() %>% 
+    dplyr::distinct()
+  colnames(grouping_tbl) = c("sample","group",batches)
+} else {
+  grouping_tbl = metadata_combined[,c(sample_id, group_id)] %>% 
+    tibble::as_tibble() %>% 
+    dplyr::distinct()
+  colnames(grouping_tbl) = c("sample","group")
+}
+
+##{r prioritization-calculation}
+prioritization_tables = suppressMessages(generate_prioritization_tables(
+  sender_receiver_info = abundance_expression_info$sender_receiver_info,
+  sender_receiver_de = sender_receiver_de,
+  ligand_activities_targets_DEgenes = ligand_activities_targets_DEgenes,
+  contrast_tbl = contrast_tbl,
+  sender_receiver_tbl = sender_receiver_tbl,
+  grouping_tbl = grouping_tbl,
+  prioritizing_weights = prioritizing_weights,
+  fraction_cutoff = fraction_cutoff, 
+  abundance_data_receiver = abundance_expression_info$abundance_data_receiver,
+  abundance_data_sender = abundance_expression_info$abundance_data_sender
+))
+
+##{r add-priors}
+lr_target_prior_cor = lr_target_prior_cor_inference(prioritization_tables$group_prioritization_tbl$receiver %>% unique(), abundance_expression_info, celltype_de, grouping_tbl, prioritization_tables, ligand_target_matrix, logFC_threshold = logFC_threshold, p_val_threshold = p_val_threshold, p_val_adj = p_val_adj)
+
+##{r save}
+path = "./"
+
+multinichenet_output = list(
+    celltype_info = abundance_expression_info$celltype_info,
+    abundance_info = abundance_expression_info,
+    DE_info = DE_info,
+    celltype_de = celltype_de,
+    sender_receiver_info = abundance_expression_info$sender_receiver_info,
+    sender_receiver_de =  sender_receiver_de,
+    ligand_activities_targets_DEgenes = ligand_activities_targets_DEgenes,
+    prioritization_tables = prioritization_tables,
+    grouping_tbl = grouping_tbl,
+    lr_target_prior_cor = lr_target_prior_cor
+  ) 
+
+multinichenet_output = make_lite_output(multinichenet_output)
+
+save = TRUE
+if(save == TRUE){
+  saveRDS(multinichenet_output, paste0(path, "lilacs_multinichenet_pt_output.rds"))
+}
