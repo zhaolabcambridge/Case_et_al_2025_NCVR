@@ -1,10 +1,3 @@
----
-title: "jack_bulkPipeline"
-author: "agc57"
-date: "2024-06-04"
-output: html_document
----
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -102,7 +95,7 @@ EnhancedVolcano(data,
 ```
 
 ```{r pathway, fig.width=15, fig.height=4}
-ranked_list <- read.csv("/Users/caseag/Desktop/Mallat Lab/TCR paper draft/trimmed_ExpandedTRegGSEA.csv", header = T, stringsAsFactors = F)
+ranked_list <- read.csv("ExpandedTRegGSEA.csv", header = T, stringsAsFactors = F)
 
 
 ranked_list %>% 
