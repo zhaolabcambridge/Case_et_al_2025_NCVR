@@ -21,18 +21,18 @@ Targeting inflammation in atherosclerotic cardiovascular disease (ASCVD) remains
 
 |Figure | Link | Images | Legend |
 | --- | --- | --- | --- |
-| Figure 1 | [[PDF](Figures/Figure_1.pdf)] | [[Figures/Figure_1.png]]  | Unsupervised clustering of T cells from scRNA-seq data shows distinct T cells subsets and diverse clonotypes. |
-| Figure 2 | [[PDF](Figures/Figure_2.pdf)] | [[Figures/Figure_2.png]]  | The effect of IL-2<sub>LD</sub> on CD4+ T cell proportions and TCR landscape. |
-| Figure 3 | [[PDF](Figures/Figure_3.pdf)] | [[Figures/Figure_3.png]]  | The effect of IL-2<sub>LD</sub> on scTCR matching between pre and post dosing. |
-| Figure 4 | [[PDF](Figures/Figure_4.pdf)] | [[Figures/Figure_4.png]]  | TCR motifs of clonally expanded Tregs cluster together. |
-| Figure 5 | [[PDF](Figures/Figure_5.pdf)] | [[Figures/Figure_5.png]]  | IL-2<sub>LD</sub> clonally expanded Tregs are more activated and show an immuno-suppressive phenotype. |
-| Figure 6 | [[PDF](Figures/Figure_6.pdf)] |  [[Figures/Figure_6.png]] | IL-2 treatment maintains Treg phenotype through a mechanism independent of BACH2 regulation. |
-| Extended Figure 1 | [[PDF](Figures/Extended_Figure_1.pdf)] | [[Figures/Extended_Figure_1.png]] |   |
-| Extended Figure 2 | [[PDF](Figures/Extended_Figure_2.pdf)] | [[Figures/Extended_Figure_2.png]] |   |
-| Extended Figure 3 | [[PDF](Figures/Extended_Figure_3.pdf)] | [[Figures/Extended_Figure_3.png]] |   |
-| Extended Figure 4 | [[PDF](Figures/Extended_Figure_4.pdf)] | [[Figures/Extended_Figure_4.png]] |   |
-| Extended Figure 5 | [[PDF](Figures/Extended_Figure_5.pdf)] | [[Figures/Extended_Figure_5.png]] |   |
-| Extended Figure 6 | [[PDF](Figures/Extended_Figure_6.pdf)] | [[Figures/Extended_Figure_6.png]] |   |
-| Extended Figure 7 | [[PDF](Figures/Extended_Figure_7.pdf)] | [[Figures/Extended_Figure_7.png]] |   |
-| Extended Figure 8 | [[PDF](Figures/Extended_Figure_8.pdf)] | [[Figures/Extended_Figure_8.png]] |   |
-| Extended Figure 9 | [[PDF](Figures/Extended_Figure_9.pdf)] | [[Figures/Extended_Figure_9.png]] |   |
+| Figure 1 | [[PDF](Figures/Figure_1.pdf)] | ![Figure 1](Figures/Figure_1.png)  | Unsupervised clustering of T cells from scRNA-seq data shows distinct T cells subsets and diverse clonotypes. |
+| Figure 2 | [[PDF](Figures/Figure_2.pdf)] | ![Figure 2](Figures/Figure_2.png)  | The effect of IL-2<sub>LD</sub> on CD4+ T cell proportions and TCR landscape. |
+| Figure 3 | [[PDF](Figures/Figure_3.pdf)] | ![Figure 3](Figures/Figure_3.png)  | The effect of IL-2<sub>LD</sub> on scTCR matching between pre and post dosing. |
+| Figure 4 | [[PDF](Figures/Figure_4.pdf)] | ![Figure 4](Figures/Figure_4.png) | TCR motifs of clonally expanded Tregs cluster together. |
+| Figure 5 | [[PDF](Figures/Figure_5.pdf)] | ![Figure 5](Figures/Figure_5.png)  | IL-2<sub>LD</sub> clonally expanded Tregs are more activated and show an immuno-suppressive phenotype. |
+| Figure 6 | [[PDF](Figures/Figure_6.pdf)] |  ![Figure 6](Figures/Figure_6.png) | IL-2 treatment maintains Treg phenotype through a mechanism independent of BACH2 regulation. |
+| Extended Figure 1 | [[PDF](Figures/Extended_Figure_1.pdf)] | ![Extended Figure 1](Figures/Extended_Figure_1.png) |   |
+| Extended Figure 2 | [[PDF](Figures/Extended_Figure_2.pdf)] | ![Extended Figure 1](Figures/Extended_Figure_2.png) |   |
+| Extended Figure 3 | [[PDF](Figures/Extended_Figure_3.pdf)] | ![Extended Figure 1](Figures/Extended_Figure_3.png) |   |
+| Extended Figure 4 | [[PDF](Figures/Extended_Figure_4.pdf)] | ![Extended Figure 1](Figures/Extended_Figure_4.png) |   |
+| Extended Figure 5 | [[PDF](Figures/Extended_Figure_5.pdf)] | ![Extended Figure 1](Figures/Extended_Figure_5.png) |   |
+| Extended Figure 6 | [[PDF](Figures/Extended_Figure_6.pdf)] | ![Extended Figure 1](Figures/Extended_Figure_6.png) |   |
+| Extended Figure 7 | [[PDF](Figures/Extended_Figure_7.pdf)] | ![Extended Figure 1](Figures/Extended_Figure_7.png) |   |
+| Extended Figure 8 | [[PDF](Figures/Extended_Figure_8.pdf)] | ![Extended Figure 1](Figures/Extended_Figure_8.png) |   |
+| Extended Figure 9 | [[PDF](Figures/Extended_Figure_9.pdf)] | ![Extended Figure 1](Figures/Extended_Figure_9.png) |   |
